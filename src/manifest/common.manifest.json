@@ -1,0 +1,14 @@
+{
+    "manifest_version": 2,
+    "version": "1.4.1",
+    "name": "WebAuthn in Extension - Playground",
+    "short_name": "WebAuthn Ext Playground",
+    "description": "WebAuthn in Extension - Playground",
+    "icons": {
+        "128": "assets/icons/icon128.png"
+    },
+    "web_accessible_resources": [
+        "assets/*"
+    ],
+    "permissions": []
+}

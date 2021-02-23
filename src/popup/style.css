@@ -1,0 +1,10 @@
+.container {
+    position: relative;
+    min-width: 500px;
+    min-height: 500px;
+}
+
+.code-block {
+    width: 100%;
+    overflow: auto;
+}
