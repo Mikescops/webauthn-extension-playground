@@ -7,7 +7,7 @@ This repository aims to show the use of webauthn within an extension.
 ### How to build
 
 ```
-npm run ci
+npm ci
 npm run build
 ```
 
@@ -29,5 +29,4 @@ npm run zip
 
 | [![twitter/mikescops](https://avatars0.githubusercontent.com/u/4266283?s=100&v=4)](https://pixelswap.fr 'Personal Website') |
 | --------------------------------------------------------------------------------------------------------------------------- |
-
-| [Corentin Mors](https://pixelswap.fr/)
+| [Corentin Mors](https://pixelswap.fr/)                                                                                      |
