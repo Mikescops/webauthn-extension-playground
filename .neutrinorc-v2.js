@@ -5,12 +5,12 @@ const typescript = require('neutrinojs-typescript');
 
 module.exports = {
     options: {
-        output: 'build/v3',
+        output: 'build/v2',
         mains: {
             popup: {
                 entry: 'popup',
                 webext: {
-                    type: 'action'
+                    type: 'browser_action'
                 }
             }
         }
@@ -19,14 +19,15 @@ module.exports = {
         typescript(),
         react({
             html: {
-                title: 'WebAuthn in Extension v3 - Playground'
+                title: 'WebAuthn in Extension v2 - Playground'
             }
         }),
         copy({
             patterns: [{ context: 'assets', from: '**/*', to: 'assets', toType: 'dir' }]
         }),
         webext({
-            manifest: 'src/manifest',
+            polyfill: true,
+            manifest: 'src/manifest-v2',
             minify: {
                 // Javascript minification occurs only in production by default.
                 // To change uglify-es options or switch to another minifier, see below.
