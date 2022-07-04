@@ -10,5 +10,7 @@
     "web_accessible_resources": [
         "assets/*"
     ],
-    "permissions": []
+    "permissions": [
+        "debugger"
+    ]
 }

@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { hot } from 'react-hot-loader';
 import { str2ab, bufferToBase64URLString } from './helpers';
+import * as browser from 'webextension-polyfill';
 
 import './style.css';
 
@@ -62,7 +63,8 @@ const App = () => {
         navigator.credentials
             .get({
                 publicKey: {
-                    challenge: str2ab('a1da16e81c0bdd098a04a91f853076b3785aa915ff07c1acc294e7a5d63946bc')
+                    challenge: str2ab('a1da16e81c0bdd098a04a91f853076b3785aa915ff07c1acc294e7a5d63946bc'),
+                    userVerification: 'preferred'
                 }
             })
             .then((credential: any) => {
@@ -98,9 +100,55 @@ const App = () => {
     const [createResponse, setCreateResponse] = useState('...');
     const [getResponse, setGetResponse] = useState('...');
 
+    const webauthnAuto = useCallback(() => {
+        let authenticator = {
+            protocol: 'ctap2',
+            transport: 'usb',
+            hasResidentKey: true,
+            hasUserVerification: true,
+            isUserVerified: true
+        };
+        browser.tabs.getCurrent().then((tab) => {
+            let tabId = tab.id;
+            chrome.debugger.attach({ tabId }, '1.3', () => {
+                if (browser.runtime.lastError) {
+                    console.error(browser.runtime.lastError.message);
+                    return;
+                }
+                chrome.debugger.sendCommand({ tabId }, 'WebAuthn.enable', {}, () => {
+                    chrome.debugger.sendCommand(
+                        { tabId },
+                        'WebAuthn.addVirtualAuthenticator',
+                        { options: authenticator },
+                        (response: any) => {
+                            if (browser.runtime.lastError) {
+                                console.error(browser.runtime.lastError.message);
+                                return;
+                            }
+                            console.log(response);
+
+                            webauthnCreate();
+                            // chrome.debugger.detach({ tabId }, () => {});
+                        }
+                    );
+                });
+            });
+        });
+    }, []);
+
+    // chrome.debugger.onDetach.addListener((source) => {
+    //     if (source.tabId == tabId) {
+    //         displayEnabled(false);
+    //     }
+    // });
+
     return (
         <div className="container">
             <h1>WebAuthn in Extension - Playground</h1>
+
+            <button onClick={webauthnAuto}>Emulate key</button>
+
+            <hr />
 
             <button onClick={webauthnCreate}>Create credential (signup)</button>
 
