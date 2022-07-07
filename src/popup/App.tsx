@@ -170,9 +170,39 @@ const App = () => {
         };
     };
 
+    let keyPair: CryptoKeyPair;
+
     const overrides: typeof navigator.credentials = {
         create: async (options: CredentialCreationOptions) => {
             console.log('create called');
+
+            keyPair = await crypto.subtle.generateKey(
+                {
+                    name: 'ECDSA',
+                    namedCurve: 'P-256'
+                },
+                true,
+                ['sign', 'verify']
+            );
+
+            const publicKey = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+            const { x, y } = publicKey;
+
+            console.log(x, base64StringToBuffer(x!));
+
+            // https://tools.ietf.org/html/rfc8152#section-7.1
+            const ec2Key = Object.fromEntries(
+                new Map<number, number | Uint8Array>([
+                    [1, 2], // EC
+                    [3, -7], // ECDSA_w_SHA256
+                    [-1, 1], // csr
+                    [-2, base64StringToBuffer(x!) as Uint8Array],
+                    [-3, base64StringToBuffer(y!) as Uint8Array]
+                ])
+            );
+
+            const ec2KeyEncoded = cbor.encode(ec2Key);
+            console.log('Encoded key:', bufferToBase64URLString(ec2KeyEncoded), cbor.decode(ec2KeyEncoded));
 
             const rpId = 'chrome-extension://' + browser.runtime.id;
             const rpIdHash = await sha256(options.publicKey?.rp.id || rpId);
@@ -182,9 +212,10 @@ const App = () => {
             const aaguid = new Uint8Array(16); // 00000000-0000-0000-0000-000000000000
             const credentialID = base64StringToBuffer(authenticatorId);
             const credentialIdLength = new Uint8Array([0, credentialID.byteLength]);
-            const credentialPublicKey = base64StringToBuffer(
-                'pQECAyYgASFYINi05ym1geUVzC4xLKKLCcbkaCoc_Z04khjOfq9eMZ6XIlggf--HdAaXVRIGE1A6XgdukSADfxTAJnFuYsTpKyb0mcQ'
-            );
+            const credentialPublicKey = new Uint8Array(ec2KeyEncoded);
+            //  base64StringToBuffer(
+            //     'pQECAyYgASFYINi05ym1geUVzC4xLKKLCcbkaCoc_Z04khjOfq9eMZ6XIlggf--HdAaXVRIGE1A6XgdukSADfxTAJnFuYsTpKyb0mcQ'
+            // );
 
             const attestedCredentialData = await new Blob([
                 aaguid,
@@ -273,6 +304,20 @@ const App = () => {
 
             const concatenated = await new Blob([rpIdHash, flags, counter]).arrayBuffer();
 
+            const clientDataJSON = stringToBuffer(JSON.stringify(getClientData(options)));
+
+            const clientDataJSONHash = await crypto.subtle.digest('SHA-256', clientDataJSON);
+
+            const signature = await crypto.subtle.sign(
+                {
+                    name: 'SHA-256'
+                },
+                keyPair.privateKey,
+                await new Blob([concatenated, clientDataJSONHash]).arrayBuffer()
+            );
+
+            console.log('Signature:', signature, bufferToBase64URLString(signature));
+
             return new Promise((resolve: (param: any) => void) => {
                 return resolve({
                     id: authenticatorId,
@@ -280,7 +325,7 @@ const App = () => {
                     response: {
                         authenticatorData: concatenated,
                         //authenticatorData: base64StringToBuffer('kBeGf8QpqZDBaE22HrGnxxuPnODqRAtj-L9iX71X1gMFAAAAAg'),
-                        clientDataJSON: stringToBuffer(JSON.stringify(getClientData(options))),
+                        clientDataJSON,
                         // base64StringToBuffer(
                         //     'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWVFBeEFHUUFZUUF4QURZQVpRQTRBREVBWXdBd0FHSUFaQUJrQURBQU9RQTRBR0VBTUFBMEFHRUFPUUF4QUdZQU9BQTFBRE1BTUFBM0FEWUFZZ0F6QURjQU9BQTFBR0VBWVFBNUFERUFOUUJtQUdZQU1BQTNBR01BTVFCaEFHTUFZd0F5QURrQU5BQmxBRGNBWVFBMUFHUUFOZ0F6QURrQU5BQTJBR0lBWXdBIiwib3JpZ2luIjoiY2hyb21lLWV4dGVuc2lvbjovL2RuaWZiY2RhYWRhb2lmZG9qZmRqaGltaGRhYW9vbWlvIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ'
                         // )
