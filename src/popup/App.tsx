@@ -328,9 +328,10 @@ const App = () => {
                         // base64StringToBuffer(
                         //     'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWVFBeEFHUUFZUUF4QURZQVpRQTRBREVBWXdBd0FHSUFaQUJrQURBQU9RQTRBR0VBTUFBMEFHRUFPUUF4QUdZQU9BQTFBRE1BTUFBM0FEWUFZZ0F6QURjQU9BQTFBR0VBWVFBNUFERUFOUUJtQUdZQU1BQTNBR01BTVFCaEFHTUFZd0F5QURrQU5BQmxBRGNBWVFBMUFHUUFOZ0F6QURrQU5BQTJBR0lBWXdBIiwib3JpZ2luIjoiY2hyb21lLWV4dGVuc2lvbjovL2RuaWZiY2RhYWRhb2lmZG9qZmRqaGltaGRhYW9vbWlvIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ'
                         // )
-                        signature: base64StringToBuffer(
-                            'MEQCIFgRtwjJt1fJX2TwEtGFRvZtDwqOf0sgT7FdIrGJzHooAiALRM8NYPVYTyVPHJEdVroLj51ikeNmvgOzyitWmLc68Q'
-                        ),
+                        signature,
+                        //  base64StringToBuffer(
+                        //     'MEQCIFgRtwjJt1fJX2TwEtGFRvZtDwqOf0sgT7FdIrGJzHooAiALRM8NYPVYTyVPHJEdVroLj51ikeNmvgOzyitWmLc68Q'
+                        // ),
                         userHandle
                     },
                     type: 'public-key',
