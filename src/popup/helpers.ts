@@ -16,14 +16,34 @@ export const str2ab = (str: string) => {
  * @param buffer buffer to convert
  */
 export const bufferToBase64URLString = (buffer: ArrayBuffer): string => {
-    const bytes = new Uint8Array(buffer);
-    let str = '';
-
-    for (const charCode of bytes) {
-        str += String.fromCharCode(charCode);
-    }
-
-    const base64String = btoa(str);
-
+    const base64String = bufferToBase64String(buffer);
     return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+};
+
+/**
+ * Base64 url-encoded string to buffer
+ * @param content string to convert
+ */
+export const base64StringToBuffer = (content: string): ArrayBuffer | Uint8Array => {
+    const parsedUrl = content.replace(/\-/g, '+').replace(/\_/g, '/');
+    return stringToBuffer(atob(parsedUrl));
+};
+
+/**
+ * String to buffer
+ * @param content string to convert
+ */
+export const stringToBuffer = (content: string): ArrayBuffer | Uint8Array => {
+    return Uint8Array.from(content, (c) => c.charCodeAt(0));
+};
+
+export const bufferToBase64String = (buffer: ArrayBuffer): string => {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+};
+
+export const sha256 = async (message: string) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(message);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return hash;
 };
