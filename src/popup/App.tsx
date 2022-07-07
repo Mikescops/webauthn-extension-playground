@@ -188,8 +188,6 @@ const App = () => {
             const publicKey = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
             const { x, y } = publicKey;
 
-            console.log(x, base64StringToBuffer(x!));
-
             // https://tools.ietf.org/html/rfc8152#section-7.1
             const ec2Key = Object.fromEntries(
                 new Map<number, number | Uint8Array>([
@@ -310,7 +308,8 @@ const App = () => {
 
             const signature = await crypto.subtle.sign(
                 {
-                    name: 'SHA-256'
+                    name: 'ECDSA',
+                    hash: 'SHA-256'
                 },
                 keyPair.privateKey,
                 await new Blob([concatenated, clientDataJSONHash]).arrayBuffer()
